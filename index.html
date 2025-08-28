@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accesso Password Manager</title>
+<style>
+body {
+  margin:0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f2f2f7;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.container {
+  width:90%;
+  max-width:400px;
+  padding:30px;
+  background-color:#fff;
+  border-radius:16px;
+  box-shadow:0 5px 15px rgba(0,0,0,0.2);
+  text-align:center;
+}
+input[type="password"] {
+  width:100%;
+  padding:12px;
+  margin:16px 0;
+  border-radius:12px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+button {
+  width:100%;
+  padding:14px;
+  font-size:16px;
+  font-weight:600;
+  border:none;
+  border-radius:12px;
+  background-color:#007aff;
+  color:white;
+  cursor:pointer;
+}
+button:hover { background-color:#005bb5; }
+.error { color:#ff3b30; margin-top:10px; font-weight:600; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🔒 Inserisci la password</h2>
+  <input type="password" id="accessPassword" placeholder="Password">
+  <button id="submitBtn">Accedi</button>
+  <div id="errorMsg" class="error"></div>
+</div>
+
+<script>
+document.getElementById('submitBtn').addEventListener('click',()=>{
+  const input=document.getElementById('accessPassword').value;
+  if(input==="1991"){
+    window.location.href="manager.html";
+  } else {
+    document.getElementById('errorMsg').textContent="Password errata! 🔑";
+  }
+});
+
+document.getElementById('accessPassword').addEventListener('keypress',(e)=>{
+  if(e.key==="Enter"){ document.getElementById('submitBtn').click(); }
+});
+</script>
+
+</body>
+</html>

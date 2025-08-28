@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Manager - Stile Facebook</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1877f2; /* blu di Facebook */
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 30px;
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0px 8px 20px rgba(0,0,0,0.2);
+    }
+
+    h2, h3 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #1877f2;
+    }
+
+    label {
+      font-weight: 600;
+      display: block;
+      margin-top: 10px;
+      text-align: left;
+      color: #444;
+    }
+
+    input[type="text"], input[type="email"], input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0 16px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1em;
+      transition: border 0.3s;
+    }
+
+    input:focus {
+      border-color: #1877f2;
+      outline: none;
+    }
+
+    button {
+      background: #1877f2;
+      color: white;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1em;
+      font-weight: 600;
+      margin: 5px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #145dbf;
+    }
+
+    .btn-danger {
+      background-color: #e74c3c;
+    }
+    .btn-danger:hover {
+      background-color: #c0392b;
+    }
+
+    .btn-warning {
+      background-color: #f39c12;
+    }
+    .btn-warning:hover {
+      background-color: #d68910;
+    }
+
+    .password {
+      font-size: 1.3em;
+      font-weight: bold;
+      color: #222;
+      margin: 15px 0;
+      word-wrap: break-word;
+      background: #f1f1f1;
+      padding: 8px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .strength {
+      font-size: 1em;
+      margin: 5px 0 15px 0;
+      font-weight: bold;
+    }
+    .weak { color: #e74c3c; }
+    .medium { color: #f39c12; }
+    .strong { color: #27ae60; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    th {
+      background: #1877f2;
+      color: white;
+      padding: 12px;
+      font-size: 1em;
+    }
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95em;
+    }
+    tr:nth-child(even) {
+      background: #f9f9f9;
+    }
+    tr:hover {
+      background: #eef3fc;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>🔐 Password Manager</h2>
+
+  <!-- Generatore -->
+  <label for="lunghezza">Lunghezza password:</label>
+  <input type="number" id="lunghezza" value="12" min="6" max="64">
+  <button onclick="generaPassword()">Genera Password</button>
+  <div id="password" class="password"></div>
+  <div id="strength" class="strength"></div>
+
+  <!-- Salvataggio -->
+  <h3>➕ Aggiungi / Modifica Credenziali</h3>
+  <label for="sito">Nome del sito:</label>
+  <input type="text" id="sito" placeholder="Es. Google, Facebook">
+  
+  <label for="email">Email o Username:</label>
+  <input type="email" id="email" placeholder="esempio@mail.com">
+  
+  <label for="passwordInput">Password:</label>
+  <input type="text" id="passwordInput" placeholder="Password" oninput="valutaPassword(this.value)">
+  <div id="strengthInput" class="strength"></div>
+  
+  <button onclick="salvaCredenziali()">💾 Salva</button>
+
+  <!-- Tabella -->
+  <h3>📋 Credenziali salvate</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Sito</th>
+        <th>Email / Username</th>
+        <th>Password</th>
+        <th>Azioni</th>
+      </tr>
+    </thead>
+    <tbody id="tabella"></tbody>
+  </table>
+</div>
+
+<script>
+  let indiceModifica = null;
+
+  function generaPassword() {
+    const caratteri = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()';
+    const lunghezza = parseInt(document.getElementById('lunghezza').value);
+    let password = '';
+
+    const array = new Uint32Array(lunghezza);
+    crypto.getRandomValues(array);
+
+    for (let i = 0; i < lunghezza; i++) {
+      password += caratteri.charAt(array[i] % caratteri.length);
+    }
+
+    document.getElementById('password').textContent = password;
+    document.getElementById('passwordInput').value = password;
+    valutaPassword(password, "strength");
+  }
+
+  function valutaPassword(password, target = "strengthInput") {
+    if (!password) {
+      document.getElementById(target).textContent = "";
+      return;
+    }
+
+    let punteggio = 0;
+    if (password.length >= 8) punteggio++;
+    if (password.length >= 12) punteggio++;
+    if (/[A-Z]/.test(password)) punteggio++;
+    if (/[a-z]/.test(password)) punteggio++;
+    if (/[0-9]/.test(password)) punteggio++;
+    if (/[^A-Za-z0-9]/.test(password)) punteggio++;
+
+    let forza = "";
+    let classe = "";
+
+    if (punteggio <= 2) {
+      forza = "Debole ❌";
+      classe = "weak";
+    } else if (punteggio <= 4) {
+      forza = "Media ⚠️";
+      classe = "medium";
+    } else {
+      forza = "Forte ✅";
+      classe = "strong";
+    }
+
+    const elem = document.getElementById(target);
+    elem.textContent = "Robustezza: " + forza;
+    elem.className = "strength " + classe;
+  }
+
+  function salvaCredenziali() {
+    const sito = document.getElementById('sito').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('passwordInput').value.trim();
+
+    if (!sito || !email || !password) {
+      alert("Compila tutti i campi!");
+      return;
+    }
+
+    let credenziali = JSON.parse(localStorage.getItem("credenziali")) || [];
+
+    if (indiceModifica !== null) {
+      credenziali[indiceModifica] = { sito, email, password };
+      indiceModifica = null;
+    } else {
+      credenziali.push({ sito, email, password });
+    }
+
+    localStorage.setItem("credenziali", JSON.stringify(credenziali));
+    mostraCredenziali();
+
+    document.getElementById('sito').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('passwordInput').value = '';
+    document.getElementById('strengthInput').textContent = '';
+  }
+
+  function mostraCredenziali() {
+    const tabella = document.getElementById("tabella");
+    tabella.innerHTML = "";
+
+    let credenziali = JSON.parse(localStorage.getItem("credenziali")) || [];
+
+    credenziali.forEach((item, index) => {
+      const row = `<tr>
+        <td>${item.sito}</td>
+        <td>${item.email}</td>
+        <td>${item.password}</td>
+        <td>
+          <button class="btn-warning" onclick="modificaCredenziale(${index})">✏️ Modifica</button>
+          <button class="btn-danger" onclick="eliminaCredenziale(${index})">🗑️ Elimina</button>
+        </td>
+      </tr>`;
+      tabella.innerHTML += row;
+    });
+  }
+
+  function eliminaCredenziale(index) {
+    let credenziali = JSON.parse(localStorage.getItem("credenziali")) || [];
+    credenziali.splice(index, 1);
+    localStorage.setItem("credenziali", JSON.stringify(credenziali));
+    mostraCredenziali();
+  }
+
+  function modificaCredenziale(index) {
+    let credenziali = JSON.parse(localStorage.getItem("credenziali")) || [];
+    document.getElementById('sito').value = credenziali[index].sito;
+    document.getElementById('email').value = credenziali[index].email;
+    document.getElementById('passwordInput').value = credenziali[index].password;
+    valutaPassword(credenziali[index].password, "strengthInput");
+    indiceModifica = index;
+  }
+
+  mostraCredenziali();
+</script>
+
+</body>
+</html>
